@@ -1,0 +1,62 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "PhasmoDecrypt",
+  "projectDescription": "A console tool to decrypt, modify, and encrypt Phasmophobia game save files",
+  "theme": "aspen",
+  "primaryColor": "#8B008B",
+  "lightColor": "#BA55D3",
+  "darkColor": "#4B0082",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting Started",
+        "pages": [
+          "introduction",
+          "installation",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "User Guide",
+        "pages": [
+          "guides/decrypting-saves",
+          "guides/editing-saves",
+          "guides/encrypting-saves",
+          "guides/presets"
+        ]
+      },
+      {
+        "group": "Technical Reference",
+        "pages": [
+          "reference/crypter",
+          "reference/edit-json",
+          "reference/ui-component",
+          "reference/save-file-format"
+        ]
+      },
+      {
+        "group": "Advanced",
+        "pages": [
+          "advanced/encryption-details",
+          "advanced/troubleshooting"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Decrypt Phasmophobia save files",
+    "Edit game progress (money, XP, items)",
+    "Unlock all tier 3 equipment",
+    "Re-encrypt modified save files",
+    "Interactive console UI with presets"
+  ],
+  "publicApiSurface": [
+    "Crypter.Decrypt(byte[])",
+    "Crypter.EncryptData(string)",
+    "EditJson.UnlockAllTier3(string)",
+    "EditJson.MaxItems(string)",
+    "EditJson.EditMoney(string, int)",
+    "EditJson.InfinityXp(string, int)",
+    "UI class for console menus"
+  ]
+}
