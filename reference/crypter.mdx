@@ -1,0 +1,141 @@
+---
+title: 'Crypter Class'
+description: 'Core cryptographic operations for Phasmophobia save files'
+---
+
+The `Crypter` class handles encryption and decryption of Phasmophobia save files using AES-CBC encryption with PBKDF2 key derivation.
+
+## Namespace
+
+```csharp
+PhasmoDecrypt.Crypter
+```
+
+## Methods
+
+### Decrypt()
+
+Decrypts an encrypted Phasmophobia save file and returns formatted JSON.
+
+```csharp
+public string Decrypt(byte[] data)
+```
+
+<ParamField path="data" type="byte[]" required>
+  The encrypted save file data as a byte array. Must include the 16-byte IV prefix.
+</ParamField>
+
+**Returns:** `string` - The decrypted JSON data formatted with indentation, or an error message if decryption fails.
+
+**Algorithm Details:**
+- Extracts the first 16 bytes as the Initialization Vector (IV)
+- Uses PBKDF2 (RFC 2898) with SHA1 hash algorithm
+- Derives a 16-byte AES key using 100 iterations
+- Secret key: `"t36gref9u84y7f43g"` (from `Globals.Save_Secret`)
+- Decrypts using AES-CBC mode with PKCS7 padding
+- Parses and formats the resulting JSON
+
+**Example Usage:**
+
+```csharp
+var crypter = new Crypter();
+byte[] encryptedData = File.ReadAllBytes("SaveFile.txt");
+string decryptedJson = crypter.Decrypt(encryptedData);
+
+if (decryptedJson.StartsWith("Error:") || decryptedJson.StartsWith("check"))
+{
+    Console.WriteLine("Decryption failed: " + decryptedJson);
+}
+else
+{
+    File.WriteAllText("SaveFile_Decrypted.json", decryptedJson);
+}
+```
+
+**Error Handling:**
+
+- Returns `"Error: Data is null or empty."` if input is null or empty
+- Returns `"check the correctness of the file: {exception}"` if JSON parsing fails
+
+<Note>
+  The method automatically formats the decrypted JSON with indentation for readability.
+</Note>
+
+---
+
+### EncryptData()
+
+Encrypts JSON data for use as a Phasmophobia save file.
+
+```csharp
+public byte[] EncryptData(string data)
+```
+
+<ParamField path="data" type="string" required>
+  The JSON string to encrypt (typically modified save file data).
+</ParamField>
+
+**Returns:** `byte[]` - The encrypted data with the IV prepended as the first 16 bytes.
+
+**Algorithm Details:**
+- Generates a random 16-byte Initialization Vector (IV) using `RandomNumberGenerator`
+- Uses PBKDF2 (RFC 2898) with SHA1 hash algorithm
+- Derives a 16-byte AES key using 100 iterations
+- Secret key: `"t36gref9u84y7f43g"` (from `Globals.Save_Secret`)
+- Encrypts using AES-CBC mode with PKCS7 padding
+- Prepends the IV to the encrypted data
+
+**Example Usage:**
+
+```csharp
+var crypter = new Crypter();
+string modifiedJson = File.ReadAllText("SaveFile_Decrypted.json");
+byte[] encryptedData = crypter.EncryptData(modifiedJson);
+File.WriteAllBytes("SaveFile_Encrypted.txt", encryptedData);
+```
+
+**Output Format:**
+
+```
+[16-byte IV][Encrypted Data]
+```
+
+<Warning>
+  The output must be written as binary data. Do not convert to text or the save file will be corrupted.
+</Warning>
+
+## Encryption Implementation
+
+### Key Derivation
+
+Both methods use PBKDF2 for key derivation:
+
+```csharp
+var dbytes = new Rfc2898DeriveBytes(
+    Globals.Save_Secret,  // "t36gref9u84y7f43g"
+    iv,                   // 16-byte salt (IV)
+    100,                  // Iteration count
+    HashAlgorithmName.SHA1
+);
+var key = dbytes.GetBytes(16);  // 128-bit AES key
+```
+
+### AES Configuration
+
+```csharp
+using var aes = Aes.Create();
+aes.Mode = CipherMode.CBC;
+aes.Padding = PaddingMode.PKCS7;
+aes.Key = key;  // 16 bytes (128-bit)
+aes.IV = iv;    // 16 bytes
+```
+
+## Dependencies
+
+- `System.Security.Cryptography` - For AES and PBKDF2
+- `Newtonsoft.Json` - For JSON parsing and formatting
+- `PhasmoDecrypt.Globals` - For the encryption secret key
+
+## Source Reference
+
+See the full implementation: `/workspace/source/Classes/Crypter.cs:14-86`

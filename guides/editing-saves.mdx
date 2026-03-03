@@ -1,0 +1,299 @@
+---
+title: 'Editing Save Files'
+description: 'Understanding Phasmophobia save file structure and how to edit decrypted saves'
+---
+
+<Warning>
+  **Always work with copies of your save files.** Before editing, make sure you've decrypted your save and have a backup of both the original encrypted file and the decrypted JSON.
+</Warning>
+
+## Save File Structure
+
+Once decrypted, Phasmophobia save files are stored as JSON with a consistent structure. Each game property is represented as an object with two fields:
+
+```json
+{
+  "PropertyName": {
+    "__type": "data_type",
+    "value": actual_value
+  }
+}
+```
+
+### Field Types
+
+The save file uses three primary data types:
+
+#### Integer Fields (`"__type": "int"`)
+
+Used for numeric values like money, XP, and item quantities:
+
+```json
+"PlayersMoney": {
+  "__type": "int",
+  "value": 5000
+},
+"Experience": {
+  "__type": "int",
+  "value": 12500
+}
+```
+
+#### Boolean Fields (`"__type": "bool"`)
+
+Used for true/false values like unlock status:
+
+```json
+"tierThreeUnlocked": {
+  "__type": "bool",
+  "value": false
+},
+"TierTwoUnlockOwned": {
+  "__type": "bool",
+  "value": true
+}
+```
+
+#### Other Types
+
+The save file may also contain string, float, or array types depending on game data.
+
+## Key Properties
+
+### Player Progression
+
+- **`PlayersMoney`** - In-game currency amount
+- **`Experience`** - Total XP earned
+
+### Equipment Inventory
+
+All inventory fields follow the pattern `[ItemName]Inventory`:
+
+- **`EMFReaderInventory`** - Number of EMF Readers owned
+- **`FlashlightInventory`** - Number of Flashlights owned
+- **`UVFlashlightInventory`** - Number of UV Flashlights owned
+- And many more for each equipment type
+
+These are modified by the [Max Items preset](/guides/presets#max-items).
+
+### Tier Unlocks
+
+Multiple boolean fields control equipment tier unlocks:
+
+- **`tierTwoUnlockOwned`** - Tier 2 unlocked status
+- **`TierTwoUnlockOwned`** - Alternative tier 2 field (case variant)
+- **`tierThreeUnlocked`** - Tier 3 unlocked status
+- **`TierThreeUnlockOwned`** - Tier 3 owned status
+
+These are modified by the [Unlock All Tier 3 preset](/guides/presets#unlock-all-tier-3).
+
+## Manual Editing
+
+You can edit the decrypted JSON file (`SaveFile_Decrypted.json`) with any text editor.
+
+<Steps>
+  <Step title="Decrypt your save file">
+    Follow the [decryption guide](/guides/decrypting-saves) to create `SaveFile_Decrypted.json`.
+  </Step>
+  
+  <Step title="Open in a text editor">
+    Open `SaveFile_Decrypted.json` in your preferred editor:
+    - Notepad++
+    - Visual Studio Code
+    - Sublime Text
+    - Any JSON editor
+  </Step>
+  
+  <Step title="Make your changes">
+    Modify the `value` fields while preserving the JSON structure:
+    
+    **Example: Set money to 100,000**
+    ```json
+    "PlayersMoney": {
+      "__type": "int",
+      "value": 100000
+    }
+    ```
+    
+    **Example: Unlock tier 3**
+    ```json
+    "tierThreeUnlocked": {
+      "__type": "bool",
+      "value": true
+    }
+    ```
+  </Step>
+  
+  <Step title="Validate JSON syntax">
+    Ensure your JSON is valid:
+    - Use a JSON validator (jsonlint.com or built into your editor)
+    - Check for missing commas, quotes, or brackets
+    - Verify proper data types (numbers without quotes, booleans as `true`/`false`)
+  </Step>
+  
+  <Step title="Save the file">
+    Save your changes to `SaveFile_Decrypted.json`.
+  </Step>
+  
+  <Step title="Re-encrypt">
+    Follow the [encryption guide](/guides/encrypting-saves) to convert your edited JSON back to the game's encrypted format.
+  </Step>
+</Steps>
+
+## How PhasmoDecrypt Edits Saves
+
+PhasmoDecrypt's preset functions use the Newtonsoft.Json library to parse and modify the save file programmatically. Here's how the editing system works:
+
+### Property Matching
+
+The `EditJson` class searches for properties by name using case-insensitive comparison:
+
+```csharp
+foreach (var prop in obje.Properties())
+{
+  if (prop.Name.Contains("Inventory", StringComparison.OrdinalIgnoreCase))
+  {
+    // Modify inventory items
+  }
+}
+```
+
+Reference: `/workspace/source/Classes/EditJson.cs:44-47`
+
+### Type Safety
+
+Before modifying values, presets verify the `__type` field:
+
+```csharp
+if (prop.Value["__type"]?.ToString() == "int")
+{
+  prop.Value["value"] = 999;
+}
+```
+
+Reference: `/workspace/source/Classes/EditJson.cs:48-51`
+
+### Global State Updates
+
+After each modification, the updated JSON is stored in `Globals.DecryptedText`:
+
+```csharp
+Globals.DecryptedText = obje.ToString();
+```
+
+Reference: `/workspace/source/Classes/EditJson.cs:56`
+
+This ensures changes persist across multiple preset applications before saving or encrypting.
+
+## Common Editing Tasks
+
+### Increasing Money
+
+Find `PlayersMoney` and change the value:
+
+```json
+"PlayersMoney": {
+  "__type": "int",
+  "value": 999999
+}
+```
+
+Or use the [Change Money preset](/guides/presets#change-money).
+
+### Adjusting Experience
+
+Find `Experience` and modify:
+
+```json
+"Experience": {
+  "__type": "int",
+  "value": 500000
+}
+```
+
+Or use the [Change XP preset](/guides/presets#change-xp).
+
+### Unlocking Equipment Tiers
+
+Set all tier unlock fields to `true`:
+
+```json
+"tierTwoUnlockOwned": {
+  "__type": "bool",
+  "value": true
+},
+"tierThreeUnlocked": {
+  "__type": "bool",
+  "value": true
+}
+```
+
+Or use the [Unlock All Tier 3 preset](/guides/presets#unlock-all-tier-3).
+
+### Maxing Out Inventory
+
+Find all `*Inventory` fields and set to desired quantities:
+
+```json
+"FlashlightInventory": {
+  "__type": "int",
+  "value": 999
+},
+"EMFReaderInventory": {
+  "__type": "int",
+  "value": 999
+}
+```
+
+Or use the [Max Items preset](/guides/presets#max-items).
+
+## Best Practices
+
+### Do:
+
+- **Test changes incrementally** - Make one change at a time and test in-game
+- **Keep backups** - Save multiple versions as you experiment
+- **Validate JSON** - Use a validator before re-encrypting
+- **Match data types** - Keep `__type` and `value` consistent
+- **Use realistic values** - Extremely high numbers may cause game issues
+
+### Don't:
+
+- **Remove the `__type` field** - The game needs this metadata
+- **Use incorrect types** - Don't put quotes around numbers or use numbers for booleans
+- **Delete properties** - Missing expected fields may cause errors
+- **Skip validation** - Invalid JSON will fail to encrypt or load
+
+## Troubleshooting
+
+### Changes don't appear in-game
+
+Possible causes:
+- Didn't re-encrypt after editing
+- Encrypted file not placed in correct location
+- Game cached the old save
+
+**Solution:** Ensure you've re-encrypted and replaced the original `SaveFile.txt`, then fully restart Phasmophobia.
+
+### Game crashes or errors after loading
+
+Possible causes:
+- Invalid JSON syntax
+- Mismatched data types
+- Extreme values causing overflow
+
+**Solution:** Restore your backup save file and review your edits for syntax or type errors.
+
+### Encryption fails
+
+Possible causes:
+- Malformed JSON
+- Special characters or encoding issues
+
+**Solution:** Validate your JSON and ensure it's saved in UTF-8 encoding without BOM.
+
+## Next Steps
+
+- **[Use presets](/guides/presets)** - Apply common modifications without manual editing
+- **[Re-encrypt saves](/guides/encrypting-saves)** - Convert your edited JSON back to game format
+- **[Decrypt saves](/guides/decrypting-saves)** - Learn about the decryption process

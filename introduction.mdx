@@ -1,0 +1,129 @@
+---
+title: Introduction
+description: A powerful tool to decrypt, modify, and encrypt Phasmophobia save files
+---
+
+# Welcome to PhasmoDecrypt
+
+PhasmoDecrypt is a Windows console application that allows you to decrypt and view save files for the game Phasmophobia. With built-in presets, you can also modify your game progress, unlock items, adjust experience points, and change your in-game currency.
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Download and set up PhasmoDecrypt on your Windows system
+  </Card>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get started with your first decrypt and encrypt operation
+  </Card>
+  <Card title="Decrypt Save Files" icon="lock-open" iconType="duotone">
+    Extract and view your Phasmophobia save data in readable JSON format
+  </Card>
+  <Card title="Modify Game Data" icon="wand-magic-sparkles" iconType="duotone">
+    Use powerful presets to unlock items, max inventory, change XP and money
+  </Card>
+</CardGroup>
+
+## What is PhasmoDecrypt?
+
+Phasmophobia stores your game progress in encrypted save files located in your user profile. PhasmoDecrypt uses AES-256 encryption with CBC mode to securely decrypt these files, allowing you to:
+
+- **View your save data** in a human-readable JSON format
+- **Modify game values** using built-in presets
+- **Re-encrypt modified data** to use in the game
+- **Backup and restore** your game progress
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Automatic Save Detection" icon="magnifying-glass">
+    Automatically finds your Phasmophobia save file in the default location:
+    ```
+    %USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia
+    ```
+  </Card>
+  
+  <Card title="Manual File Selection" icon="file-import">
+    Import save files from any location for decryption or encryption
+  </Card>
+  
+  <Card title="Powerful Presets" icon="sparkles">
+    Built-in modifications including:
+    - Unlock all Tier 3 items
+    - Max inventory items (999)
+    - Custom money amounts
+    - Custom XP values
+  </Card>
+  
+  <Card title="Interactive UI" icon="terminal">
+    Navigate with arrow keys and Enter in a beautiful console interface
+  </Card>
+</CardGroup>
+
+## How It Works
+
+PhasmoDecrypt implements the same encryption algorithm used by Phasmophobia:
+
+1. **Decryption Process**
+   - Extracts the 16-byte initialization vector (IV) from the save file
+   - Derives a 16-byte AES key using PBKDF2 with SHA1 (100 iterations)
+   - Decrypts the data using AES in CBC mode with PKCS7 padding
+   - Parses and formats the JSON output
+
+2. **Encryption Process**
+   - Generates a random 16-byte IV
+   - Derives the encryption key using the same PBKDF2 process
+   - Encrypts the JSON data using AES-CBC
+   - Prepends the IV to the encrypted data
+
+<Note>
+The encryption uses the secret key `t36gref9u84y7f43g` which is hardcoded in the Phasmophobia game client (Globals.cs:7).
+</Note>
+
+## Technology Stack
+
+PhasmoDecrypt is built with:
+
+- **.NET 9.0** - Modern C# runtime
+- **System.Security.Cryptography** - AES encryption/decryption
+- **Newtonsoft.Json** - JSON parsing and serialization
+- **Console UI** - Interactive menu navigation
+
+## Use Cases
+
+<AccordionGroup>
+  <Accordion title="Save File Backup">
+    Decrypt your save file to JSON format for easy backup and version control. You can track changes to your game progress over time.
+  </Accordion>
+  
+  <Accordion title="Progress Recovery">
+    If you've lost progress due to a bug or corruption, you can restore a previous save by decrypting a backup and re-encrypting it.
+  </Accordion>
+  
+  <Accordion title="Testing and Development">
+    Quickly unlock all items and max out resources to test different game scenarios without grinding.
+  </Accordion>
+  
+  <Accordion title="Data Analysis">
+    Examine the structure of Phasmophobia save files to understand how the game stores player data.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+Modifying save files may affect your game experience. Always backup your original save files before making changes. Use at your own risk.
+</Warning>
+
+## Getting Started
+
+Ready to decrypt your first save file? Head over to the [Installation](/installation) guide to download PhasmoDecrypt, or jump straight to the [Quick Start](/quickstart) tutorial.
+
+## Community and Support
+
+PhasmoDecrypt is an open-source project. Contributions are welcome!
+
+<CardGroup cols={2}>
+  <Card title="GitHub Repository" icon="github" href="https://github.com/Oztturk/PhasmoDecrypt">
+    View source code, report issues, and contribute
+  </Card>
+  <Card title="Submit Pull Request" icon="code-pull-request" href="https://github.com/Oztturk/PhasmoDecrypt/pulls">
+    Help improve PhasmoDecrypt with your contributions
+  </Card>
+</CardGroup>

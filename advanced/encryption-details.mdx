@@ -1,0 +1,204 @@
+---
+title: Encryption Details
+description: Deep dive into PhasmoDecrypt's AES-CBC encryption implementation
+---
+
+## Overview
+
+PhasmoDecrypt uses industry-standard AES encryption in CBC mode with PBKDF2 key derivation to secure Phasmophobia save files. This page provides technical details about the encryption implementation.
+
+## Encryption Algorithm
+
+### AES-CBC Configuration
+
+The encryption uses the following AES settings:
+
+- **Algorithm**: AES (Advanced Encryption Standard)
+- **Mode**: CBC (Cipher Block Chaining)
+- **Padding**: PKCS7
+- **Key Size**: 128-bit (16 bytes)
+- **IV Size**: 128-bit (16 bytes)
+
+<Note>
+AES-CBC mode requires an initialization vector (IV) that must be unique for each encryption operation to ensure security.
+</Note>
+
+## Key Derivation
+
+### PBKDF2 Parameters
+
+PhasmoDecrypt uses PBKDF2 (Password-Based Key Derivation Function 2) to derive the encryption key:
+
+```csharp
+var dbytes = new Rfc2898DeriveBytes(
+    Globals.Save_Secret,  // Password: "t36gref9u84y7f43g"
+    iv,                   // Salt: The IV bytes
+    100,                  // Iterations: 100
+    HashAlgorithmName.SHA1
+);
+var key = dbytes.GetBytes(16);  // Derive 16-byte key
+```
+
+**Parameters**:
+- **Password**: `t36gref9u84y7f43g` (defined in `Globals.cs:7`)
+- **Salt**: The 16-byte IV (different for each file)
+- **Iterations**: 100
+- **Hash Algorithm**: SHA-1
+- **Output Size**: 16 bytes (128 bits)
+
+<Warning>
+The encryption password is hardcoded and shared across all Phasmophobia installations. This is a game design choice, not a security vulnerability in PhasmoDecrypt.
+</Warning>
+
+## Initialization Vector (IV) Handling
+
+### IV Generation (Encryption)
+
+When encrypting data, a new random IV is generated for each operation:
+
+```csharp
+byte[] iv = new byte[16];
+using (var rng = RandomNumberGenerator.Create())
+{
+    rng.GetBytes(iv);
+}
+```
+
+This ensures that encrypting the same save file multiple times produces different ciphertext, which is a critical security property.
+
+### IV Storage
+
+The IV is prepended to the encrypted data in the save file:
+
+```
+[16 bytes IV][Encrypted Data]
+```
+
+The first 16 bytes of any encrypted save file are always the IV, followed by the actual encrypted content.
+
+### IV Extraction (Decryption)
+
+When decrypting, the IV is extracted from the beginning of the file:
+
+```csharp
+var iv = new byte[16];
+Array.Copy(data, iv, 16);  // Copy first 16 bytes to IV
+```
+
+The remaining bytes (`data.Length - 16`) are then decrypted using this IV.
+
+## Encryption Process
+
+The encryption workflow follows these steps:
+
+<Steps>
+  <Step title="Generate Random IV">
+    Create a cryptographically secure 16-byte random IV using `RandomNumberGenerator`
+  </Step>
+  
+  <Step title="Derive Encryption Key">
+    Use PBKDF2 with the hardcoded password, the generated IV as salt, and 100 iterations to derive a 16-byte key
+  </Step>
+  
+  <Step title="Configure AES">
+    Set up AES with CBC mode, PKCS7 padding, and the derived key and IV
+  </Step>
+  
+  <Step title="Encrypt Data">
+    Convert the JSON string to UTF-8 bytes and encrypt using AES-CBC
+  </Step>
+  
+  <Step title="Prepend IV">
+    Combine the IV and encrypted data: `[IV][EncryptedData]`
+  </Step>
+</Steps>
+
+## Decryption Process
+
+The decryption workflow reverses the encryption process:
+
+<Steps>
+  <Step title="Extract IV">
+    Read the first 16 bytes from the encrypted file as the IV
+  </Step>
+  
+  <Step title="Derive Decryption Key">
+    Use PBKDF2 with the same password and the extracted IV to derive the key
+  </Step>
+  
+  <Step title="Configure AES">
+    Set up AES with the same parameters used for encryption
+  </Step>
+  
+  <Step title="Decrypt Data">
+    Decrypt the remaining bytes (after the IV) using AES-CBC
+  </Step>
+  
+  <Step title="Parse JSON">
+    Convert the decrypted bytes to a UTF-8 string and parse as JSON
+  </Step>
+</Steps>
+
+## Implementation Details
+
+### File Format
+
+Encrypted save files have the following structure:
+
+| Offset | Size | Description |
+|--------|------|-------------|
+| 0 | 16 bytes | Initialization Vector (IV) |
+| 16 | Variable | AES-CBC encrypted JSON data |
+
+### Character Encoding
+
+All text data is encoded using UTF-8:
+
+```csharp
+Encoding.UTF8
+```
+
+This ensures proper handling of international characters and special symbols in save data.
+
+### JSON Formatting
+
+After decryption, the JSON is formatted with indentation for readability:
+
+```csharp
+var obj = JsonConvert.DeserializeObject(decrypted);
+var output = JsonConvert.SerializeObject(obj, Formatting.Indented);
+```
+
+## Security Considerations
+
+<AccordionGroup>
+  <Accordion title="Why is the password hardcoded?">
+    The encryption password `t36gref9u84y7f43g` is hardcoded in the game itself. Phasmophobia uses this shared secret to encrypt save files on all platforms. PhasmoDecrypt uses the same password to decrypt and re-encrypt save files.
+  </Accordion>
+
+  <Accordion title="Is 100 iterations secure enough?">
+    While modern standards recommend 100,000+ iterations for password hashing, this implementation uses 100 iterations because:
+    
+    - It matches the game's original implementation
+    - The password is not user-provided (it's a fixed secret)
+    - The IV provides uniqueness for each encryption
+    
+    For compatibility with Phasmophobia, these parameters cannot be changed.
+  </Accordion>
+
+  <Accordion title="Why use the IV as the salt?">
+    Using the IV as the PBKDF2 salt ensures that each encrypted file has a unique derived key, even though the password is the same. This is a valid approach when the IV is randomly generated and stored with the ciphertext.
+  </Accordion>
+</AccordionGroup>
+
+## Code References
+
+Key encryption code is located in:
+
+- **Encryption Method**: `Classes/Crypter.cs:54-86`
+- **Decryption Method**: `Classes/Crypter.cs:14-52`
+- **Encryption Secret**: `Classes/Globals.cs:7`
+
+<Note>
+All encryption parameters must match Phasmophobia's implementation exactly for save file compatibility.
+</Note>

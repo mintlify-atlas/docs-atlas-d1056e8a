@@ -1,0 +1,155 @@
+---
+title: 'Decrypting Save Files'
+description: 'Learn how to decrypt Phasmophobia save files using PhasmoDecrypt'
+---
+
+<Warning>
+  **Always backup your save file before decrypting or modifying it.** While PhasmoDecrypt creates separate decrypted files and doesn't modify the original, having a backup ensures you can restore your progress if anything goes wrong.
+  
+  Your original save is located at:
+  `%USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia\SaveFile.txt`
+</Warning>
+
+## Overview
+
+PhasmoDecrypt can decrypt Phasmophobia save files using AES-CBC encryption with a game-specific secret key. The tool supports both automatic detection of your save file location and manual path input.
+
+## Decryption Methods
+
+When you launch PhasmoDecrypt and select **Decrypt** from the main menu, you'll see two options:
+
+### Auto-Detect Save File Location
+
+<Steps>
+  <Step title="Select 'Use My Save File'">
+    From the Decrypt menu, use the **Left/Right arrow keys** to navigate and select **Use My Save File**, then press **Enter**.
+  </Step>
+  
+  <Step title="Automatic detection">
+    PhasmoDecrypt automatically looks for your save file at:
+    ```
+    %USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia\SaveFile.txt
+    ```
+    
+    If the file exists, it will be decrypted immediately. If not found, you'll see an error message and need to use the manual path option.
+  </Step>
+  
+  <Step title="Choose next action">
+    After successful decryption, you can:
+    - **Save Decrypted File** - Exports the decrypted JSON to `SaveFile_Decrypted.json` in the current directory
+    - **Presets** - Apply modifications using built-in presets (see [Presets Guide](/guides/presets))
+    - **Back** - Return to the Decrypt menu
+  </Step>
+</Steps>
+
+### Manual File Path
+
+<Steps>
+  <Step title="Select 'I'll add it myself'">
+    From the Decrypt menu, navigate to **I'll add it myself** and press **Enter**.
+  </Step>
+  
+  <Step title="Enter file path">
+    You'll see the prompt:
+    ```
+    File Path >
+    ```
+    
+    Enter the full path to your save file. You can:
+    - Drag and drop the file into the console (quotes will be automatically trimmed)
+    - Type or paste the full path
+    - Use paths with spaces (quotes are handled automatically)
+    
+    Example paths:
+    ```
+    C:\Users\YourName\AppData\LocalLow\Kinetic Games\Phasmophobia\SaveFile.txt
+    D:\Backups\SaveFile.txt
+    ```
+  </Step>
+  
+  <Step title="Validation and decryption">
+    PhasmoDecrypt validates that:
+    - The path is not empty or whitespace
+    - The file exists at the specified location
+    
+    If validation fails, you'll be prompted to enter the path again. Once validated, the file is decrypted and you can proceed to save or edit it.
+  </Step>
+</Steps>
+
+## How Decryption Works
+
+PhasmoDecrypt uses the `Crypter` class to perform AES-CBC decryption:
+
+1. **Extracts the IV** - The first 16 bytes of the encrypted file contain the initialization vector
+2. **Derives the key** - Uses PBKDF2 (Rfc2898DeriveBytes) with the game's secret key, the IV, and 100 iterations with SHA1
+3. **Decrypts the data** - Applies AES decryption in CBC mode with PKCS7 padding
+4. **Formats as JSON** - Parses and pretty-prints the decrypted data as indented JSON
+
+Reference: `/workspace/source/Classes/Crypter.cs:14-52`
+
+## Output Format
+
+The decrypted save file is formatted as JSON with the following structure:
+
+```json
+{
+  "PlayersMoney": {
+    "__type": "int",
+    "value": 5000
+  },
+  "Experience": {
+    "__type": "int",
+    "value": 12500
+  },
+  "EMFReaderInventory": {
+    "__type": "int",
+    "value": 3
+  },
+  "tierThreeUnlocked": {
+    "__type": "bool",
+    "value": false
+  }
+  // ... more fields
+}
+```
+
+Each field contains:
+- `__type` - The data type (int, bool, string, etc.)
+- `value` - The actual value
+
+## Next Steps
+
+After decrypting your save file, you can:
+
+- **[Edit the save manually](/guides/editing-saves)** - Modify the JSON file directly
+- **[Use presets](/guides/presets)** - Apply common modifications like unlocking all items or changing money/XP
+- **[Re-encrypt the save](/guides/encrypting-saves)** - Convert your modified JSON back to the game's encrypted format
+
+## Troubleshooting
+
+### "No saveFile.txt found at the specified location"
+
+This means the auto-detect feature couldn't find your save file. This can happen if:
+- Phasmophobia is installed in a non-standard location
+- You're using a different Windows user profile
+- The game hasn't been launched yet (no save file created)
+
+**Solution:** Use the manual path option and navigate to your actual save file location.
+
+### "check the correctness of the file" error
+
+This error occurs when:
+- The file is corrupted
+- The file is not a valid Phasmophobia save file
+- The encryption format has changed in a game update
+
+**Solution:** Verify you're using the correct file and that it's not corrupted. Try restoring from a backup.
+
+### Invalid file path errors
+
+Common causes:
+- Empty or whitespace-only input
+- File doesn't exist at the specified path
+- Typos in the path
+
+**Solution:** Double-check the path and try again. You can drag and drop files into the console for accurate paths.

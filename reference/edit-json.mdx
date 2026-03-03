@@ -1,0 +1,223 @@
+---
+title: 'EditJson Class'
+description: 'Modify Phasmophobia save file data with preset cheats'
+---
+
+The `EditJson` class provides static methods to modify decrypted Phasmophobia save files, enabling various game modifications like unlocking items, maxing inventory, and editing player stats.
+
+## Namespace
+
+```csharp
+PhasmoDecrypt.EditJson
+```
+
+## Methods
+
+All methods are `static` and modify the global `Globals.DecryptedText` variable with the updated JSON.
+
+### UnlockAllTier3()
+
+Unlocks all Tier 2 and Tier 3 items in the game.
+
+```csharp
+public static void UnlockAllTier3(string data)
+```
+
+<ParamField path="data" type="string" required>
+  The decrypted save file JSON string.
+</ParamField>
+
+**Returns:** `void` - Updates `Globals.DecryptedText` with modified JSON.
+
+**Behavior:**
+- Searches for properties containing:
+  - `"TierTwoUnlockOwned"` (case-insensitive)
+  - `"tierTwoUnlockOwned"` (case-insensitive)
+  - `"tierThreeUnlocked"` (case-insensitive)
+  - `"TierThreeUnlockOwned"` (case-insensitive)
+- Sets all matching boolean properties to `true`
+- Prints each updated property to console
+
+**Example Usage:**
+
+```csharp
+string decryptedJson = crypter.Decrypt(saveData);
+EditJson.UnlockAllTier3(decryptedJson);
+// Globals.DecryptedText now contains the modified JSON
+```
+
+**Console Output:**
+
+```
+Updated TierTwoUnlockOwned to true
+Updated TierThreeUnlockOwned to true
+```
+
+---
+
+### MaxItems()
+
+Sets all inventory items to maximum quantity (999).
+
+```csharp
+public static string MaxItems(string data)
+```
+
+<ParamField path="data" type="string" required>
+  The decrypted save file JSON string.
+</ParamField>
+
+**Returns:** `string` - The modified JSON (also updates `Globals.DecryptedText`).
+
+**Behavior:**
+- Searches for properties containing `"Inventory"` (case-insensitive)
+- Sets all matching integer properties to `999`
+- Prints each updated property to console
+
+**Example Usage:**
+
+```csharp
+string decryptedJson = crypter.Decrypt(saveData);
+string modifiedJson = EditJson.MaxItems(decryptedJson);
+// Both modifiedJson and Globals.DecryptedText contain the result
+```
+
+**Console Output:**
+
+```
+Updated EMFReaderInventory to 999
+Updated FlashlightInventory to 999
+Updated CameraInventory to 999
+```
+
+<Note>
+  This method returns the modified JSON string, unlike other methods in this class.
+</Note>
+
+---
+
+### EditMoney()
+
+Sets the player's money to a specific amount.
+
+```csharp
+public static void EditMoney(string data, int amount)
+```
+
+<ParamField path="data" type="string" required>
+  The decrypted save file JSON string.
+</ParamField>
+
+<ParamField path="amount" type="int" required>
+  The desired money amount (can be any integer value).
+</ParamField>
+
+**Returns:** `void` - Updates `Globals.DecryptedText` with modified JSON.
+
+**Behavior:**
+- Searches for the `"PlayersMoney"` property (case-insensitive exact match)
+- Sets the integer value to the specified amount
+- Prints the update to console
+
+**Example Usage:**
+
+```csharp
+string decryptedJson = crypter.Decrypt(saveData);
+EditJson.EditMoney(decryptedJson, 999999);
+// Player now has $999,999
+```
+
+**Console Output:**
+
+```
+Updated PlayersMoney to 999999
+```
+
+---
+
+### InfinityXp()
+
+Sets the player's experience points to a specific amount.
+
+```csharp
+public static void InfinityXp(string data, int amount)
+```
+
+<ParamField path="data" type="string" required>
+  The decrypted save file JSON string.
+</ParamField>
+
+<ParamField path="amount" type="int" required>
+  The desired XP amount (can be any integer value).
+</ParamField>
+
+**Returns:** `void` - Updates `Globals.DecryptedText` with modified JSON.
+
+**Behavior:**
+- Searches for the `"Experience"` property (case-insensitive exact match)
+- Sets the integer value to the specified amount
+- Prints the update to console
+
+**Example Usage:**
+
+```csharp
+string decryptedJson = crypter.Decrypt(saveData);
+EditJson.InfinityXp(decryptedJson, 1000000);
+// Player now has 1,000,000 XP
+```
+
+**Console Output:**
+
+```
+Updated Experience to 1000000
+```
+
+---
+
+## Combined Usage
+
+All methods can be chained to apply multiple modifications:
+
+```csharp
+var crypter = new Crypter();
+byte[] saveData = File.ReadAllBytes("SaveFile.txt");
+string decryptedJson = crypter.Decrypt(saveData);
+
+// Apply multiple modifications
+EditJson.UnlockAllTier3(decryptedJson);
+EditJson.MaxItems(Globals.DecryptedText);
+EditJson.EditMoney(Globals.DecryptedText, 999999);
+EditJson.InfinityXp(Globals.DecryptedText, 1000000);
+
+// Encrypt and save
+byte[] encryptedData = crypter.EncryptData(Globals.DecryptedText);
+File.WriteAllBytes("SaveFile_Modified.txt", encryptedData);
+```
+
+<Warning>
+  Always pass `Globals.DecryptedText` to subsequent method calls after the first modification, as each method updates this global variable.
+</Warning>
+
+## JSON Property Format
+
+All methods expect properties in this format:
+
+```json
+{
+  "PropertyName": {
+    "__type": "int",  // or "bool"
+    "value": 100
+  }
+}
+```
+
+The methods check the `__type` field before modifying the `value` field.
+
+## Dependencies
+
+- `Newtonsoft.Json.Linq` - For JSON parsing and manipulation
+- `PhasmoDecrypt.Globals` - For storing the modified DecryptedText
+
+## Source Reference
+
+See the full implementation: `/workspace/source/Classes/EditJson.cs:12-99`

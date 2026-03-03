@@ -1,0 +1,261 @@
+---
+title: 'Encrypting Save Files'
+description: 'Learn how to re-encrypt modified Phasmophobia save files for use in-game'
+---
+
+<Warning>
+  **Back up your original save file before replacing it.** Once you copy the encrypted file to your Phasmophobia save location, the original will be overwritten. Keep a backup in case you need to restore your progress.
+  
+  Save location: `%USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia\SaveFile.txt`
+</Warning>
+
+## Overview
+
+After decrypting and editing your save file, you need to re-encrypt it back to the format Phasmophobia expects. PhasmoDecrypt handles this encryption using the same AES-CBC algorithm the game uses, ensuring compatibility.
+
+## Encryption Methods
+
+From the main menu, select **Encrypt** to access encryption options:
+
+### Auto-Detect Decrypted File
+
+<Steps>
+  <Step title="Select 'Use My Decrypted File'">
+    From the Encrypt menu, use the **Left/Right arrow keys** to select **Use My Decrypted File**, then press **Enter**.
+  </Step>
+  
+  <Step title="Automatic file detection">
+    PhasmoDecrypt looks for `SaveFile_Decrypted.json` in the current directory (where PhasmoDecrypt.exe is located).
+    
+    This file is automatically created when you:
+    - Use the "Save Decrypted File" option after decryption
+    - Use the "Save decrypted" option in the Presets menu
+    
+    If the file doesn't exist, you'll see an error and need to use the manual path option.
+  </Step>
+  
+  <Step title="Encryption and output">
+    The decrypted JSON is encrypted and saved as:
+    ```
+    SaveFile_Encrypted.txt
+    ```
+    
+    You'll see the success message:
+    ```
+    Encrypt Successful saved to SaveFile_Encrypted.txt
+    ```
+  </Step>
+</Steps>
+
+### Manual File Path
+
+<Steps>
+  <Step title="Select 'I ll add it myself'">
+    From the Encrypt menu, navigate to **I ll add it myself** and press **Enter**.
+  </Step>
+  
+  <Step title="Enter file path">
+    You'll see the prompt:
+    ```
+    File Path >
+    ```
+    
+    Enter the full path to your decrypted JSON file:
+    ```
+    C:\Users\YourName\Documents\SaveFile_Decrypted.json
+    D:\Backups\modified_save.json
+    ```
+    
+    You can drag and drop the file into the console (quotes will be automatically trimmed).
+  </Step>
+  
+  <Step title="Validation and encryption">
+    PhasmoDecrypt validates that:
+    - The path is not empty or whitespace
+    - The file exists at the specified location
+    
+    Once validated, the file is encrypted and saved as `SaveFile_Encrypted.txt` in the current directory.
+  </Step>
+</Steps>
+
+## How Encryption Works
+
+PhasmoDecrypt uses the `Crypter` class to perform AES-CBC encryption:
+
+1. **Generates a random IV** - Creates a 16-byte initialization vector using cryptographically secure random number generation
+2. **Derives the encryption key** - Uses PBKDF2 (Rfc2898DeriveBytes) with the game's secret key, the IV, and 100 iterations with SHA1
+3. **Encrypts the data** - Applies AES encryption in CBC mode with PKCS7 padding
+4. **Combines IV and encrypted data** - Prepends the IV to the encrypted bytes (game expects this format)
+
+Reference: `/workspace/source/Classes/Crypter.cs:54-85`
+
+### Technical Details
+
+The encryption process matches Phasmophobia's format exactly:
+
+```
+[16 bytes: IV][Remaining bytes: Encrypted save data]
+```
+
+- **Algorithm:** AES (Advanced Encryption Standard)
+- **Mode:** CBC (Cipher Block Chaining)
+- **Padding:** PKCS7
+- **Key derivation:** PBKDF2 with SHA1, 100 iterations
+- **Secret:** Game-specific constant (`"t36gref9u84y7f43g"`)
+
+Reference: `/workspace/source/Classes/Globals.cs:7`
+
+## Encrypting from Presets Menu
+
+If you're using [presets](/guides/presets) to modify your save, you can encrypt directly from the Presets menu:
+
+<Steps>
+  <Step title="Navigate to Presets">
+    Decrypt your save file and select **Presets** from the after-decryption menu.
+  </Step>
+  
+  <Step title="Apply desired presets">
+    Use any combination of presets (Unlock All tier 3, Max Items, Change Money/XP, or Use all).
+  </Step>
+  
+  <Step title="Select 'Save and encrypt'">
+    Navigate to **Save and encrypt** in the Presets menu and press **Enter**.
+  </Step>
+  
+  <Step title="Encrypted file created">
+    Your modified save is encrypted and saved as:
+    ```
+    SaveFile_Encrypted.txt
+    ```
+    
+    This file is ready to be copied to your Phasmophobia save directory.
+  </Step>
+</Steps>
+
+Reference: `/workspace/source/Program.cs:265-270`
+
+## Using the Encrypted Save
+
+After encryption, you need to replace your game's save file:
+
+<Steps>
+  <Step title="Locate your encrypted file">
+    Find `SaveFile_Encrypted.txt` in the directory where PhasmoDecrypt.exe is located.
+  </Step>
+  
+  <Step title="Backup your original save">
+    Before replacing, **make a backup** of your current save file:
+    
+    1. Navigate to: `%USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia\`
+    2. Copy `SaveFile.txt` to a backup location
+    3. Label it clearly (e.g., `SaveFile_Backup_2026-03-03.txt`)
+  </Step>
+  
+  <Step title="Close Phasmophobia">
+    **Ensure Phasmophobia is completely closed** before replacing the save file. The game may overwrite your changes if it's running.
+  </Step>
+  
+  <Step title="Replace the save file">
+    1. Rename `SaveFile_Encrypted.txt` to `SaveFile.txt`
+    2. Copy it to: `%USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia\`
+    3. When prompted, choose to replace the existing file
+  </Step>
+  
+  <Step title="Launch and verify">
+    Start Phasmophobia and verify your changes:
+    - Check your money and XP
+    - Verify unlocked items and tiers
+    - Test that the game loads without errors
+    
+    If anything is wrong, restore your backup from Step 2.
+  </Step>
+</Steps>
+
+## Quick Access to Save Directory
+
+To quickly navigate to your Phasmophobia save directory:
+
+1. Press **Windows Key + R**
+2. Paste this path:
+   ```
+   %USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia
+   ```
+3. Press **Enter**
+
+## Output Files Reference
+
+PhasmoDecrypt creates different output files depending on your workflow:
+
+| File | Created By | Purpose |
+|------|------------|----------|
+| `SaveFile_Decrypted.json` | "Save Decrypted File" option | Human-readable JSON for editing |
+| `SaveFile_Encrypted.txt` | Encryption process | Game-compatible encrypted save |
+
+Both files are created in the directory where PhasmoDecrypt.exe is located.
+
+Reference: `/workspace/source/Program.cs:161-162`, `/workspace/source/Program.cs:314`
+
+## Troubleshooting
+
+### "No SaveFile_Decrypted.json found"
+
+This means the auto-detect feature couldn't find the decrypted file.
+
+**Causes:**
+- You haven't saved the decrypted file yet
+- The file was moved or deleted
+- The file has a different name
+
+**Solution:** Use the manual path option or go back and use "Save Decrypted File" after decrypting.
+
+### Game doesn't recognize the encrypted save
+
+Possible causes:
+- File not renamed to `SaveFile.txt`
+- File placed in wrong directory
+- Original JSON had syntax errors
+- Game was running when you replaced the file
+
+**Solution:** 
+1. Verify the file is named exactly `SaveFile.txt` (not `.txt.txt`)
+2. Confirm it's in: `%USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia\`
+3. Close and restart Phasmophobia completely
+
+### Changes reverted after launching game
+
+Possible causes:
+- Game was running when you replaced the file
+- Cloud save sync overwrote your changes
+- Wrong profile/user folder
+
+**Solution:**
+1. Ensure Phasmophobia is fully closed (check Task Manager)
+2. Disable Steam Cloud sync for Phasmophobia if enabled
+3. Verify you're editing the correct user profile's save
+
+### Game crashes on load
+
+Possible causes:
+- Corrupted encryption
+- Invalid JSON before encryption
+- Extreme values in save file
+
+**Solution:**
+1. Restore your backup save immediately
+2. Validate your JSON file before encrypting
+3. Use more conservative values in your edits
+4. Try encrypting again with a fresh decryption
+
+## Best Practices
+
+- **Always keep backups** - Save multiple versions with timestamps
+- **Test incrementally** - Make small changes and test before doing more
+- **Close the game first** - Never replace files while Phasmophobia is running
+- **Validate before encrypting** - Check your JSON syntax before encryption
+- **Use descriptive names** - Label your backup files clearly
+
+## Next Steps
+
+- **[Decrypt saves](/guides/decrypting-saves)** - Learn about the decryption process
+- **[Edit saves](/guides/editing-saves)** - Understand save file structure and manual editing
+- **[Use presets](/guides/presets)** - Apply common modifications without manual editing

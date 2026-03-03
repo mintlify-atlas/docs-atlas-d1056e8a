@@ -1,0 +1,209 @@
+---
+title: 'UI Class'
+description: 'Console menu system for interactive navigation'
+---
+
+The `UI` class provides an interactive console menu system with keyboard navigation for building terminal-based user interfaces.
+
+## Namespace
+
+```csharp
+UI
+```
+
+<Note>
+  This class is in the global namespace, not the `PhasmoDecrypt` namespace.
+</Note>
+
+## Constructor
+
+Creates a new interactive menu with selectable options.
+
+```csharp
+public UI(
+    string[] options,
+    Action<int> onSelect,
+    ConsoleColor selectedBackgroundColor = ConsoleColor.DarkMagenta,
+    ConsoleColor selectedForegroundColor = ConsoleColor.White
+)
+```
+
+<ParamField path="options" type="string[]" required>
+  Array of menu option labels to display.
+</ParamField>
+
+<ParamField path="onSelect" type="Action<int>" required>
+  Callback function invoked when user presses Enter. Receives the selected index (0-based).
+</ParamField>
+
+<ParamField path="selectedBackgroundColor" type="ConsoleColor" default="ConsoleColor.DarkMagenta">
+  Background color for the currently selected option.
+</ParamField>
+
+<ParamField path="selectedForegroundColor" type="ConsoleColor" default="ConsoleColor.White">
+  Text color for the currently selected option.
+</ParamField>
+
+## Methods
+
+### Display()
+
+Displays the menu and handles user input.
+
+```csharp
+public void Display()
+```
+
+**Returns:** `void` - Blocks until user selects an option.
+
+**Behavior:**
+- Clears the console and displays the menu
+- Shows all options horizontally with tab spacing
+- Highlights the selected option with custom colors
+- Handles keyboard input:
+  - **Left Arrow**: Move selection left (wraps to end)
+  - **Right Arrow**: Move selection right (wraps to start)
+  - **Enter**: Execute `onSelect` callback and exit
+- Displays the application banner using `Tag()` method
+
+## Example Usage
+
+### Basic Menu
+
+```csharp
+string[] options = { "Decrypt", "Encrypt", "Exit" };
+
+var menu = new UI(
+    options,
+    onSelect: selectedIndex =>
+    {
+        switch (selectedIndex)
+        {
+            case 0:
+                Console.WriteLine("Decrypt selected");
+                break;
+            case 1:
+                Console.WriteLine("Encrypt selected");
+                break;
+            case 2:
+                Environment.Exit(0);
+                break;
+        }
+    }
+);
+
+menu.Display();
+```
+
+### Custom Colors
+
+```csharp
+string[] options = { "Option 1", "Option 2", "Option 3" };
+
+var menu = new UI(
+    options,
+    onSelect: index => Console.WriteLine($"Selected: {options[index]}"),
+    selectedBackgroundColor: ConsoleColor.Blue,
+    selectedForegroundColor: ConsoleColor.Yellow
+);
+
+menu.Display();
+```
+
+### Real-World Example (from Program.cs)
+
+```csharp
+string[] options = { "Use My Save File", "I'll add it myself", "Back" };
+
+var menu = new UI(
+    options,
+    onSelect: selectedIndex =>
+    {
+        switch (selectedIndex)
+        {
+            case 0:
+                string path = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "AppData", "LocalLow", "Kinetic Games", "Phasmophobia"
+                );
+                string saveFile = Path.Combine(path, "SaveFile.txt");
+                
+                if (File.Exists(saveFile))
+                {
+                    var crypter = new Crypter();
+                    string decryptedText = crypter.Decrypt(File.ReadAllBytes(saveFile));
+                    Globals.DecryptedText = decryptedText;
+                }
+                break;
+                
+            case 1:
+                Console.Write("File Path > ");
+                string? filePath = Console.ReadLine()?.Trim('"');
+                // Handle manual file input
+                break;
+                
+            case 2:
+                // Go back
+                break;
+        }
+    }
+);
+
+menu.Display();
+```
+
+## Menu Layout
+
+Options are displayed horizontally:
+
+```
+		Option 1		  Option 2  		  Option 3  	
+        ^^^^^^^^^^^^^ (highlighted with background color)
+```
+
+- Each option is prefixed with `\t\t`
+- Selected option has background and foreground colors applied
+- Options are wrapped in tab characters for spacing
+
+## Navigation Behavior
+
+- **Wrapping**: Navigation wraps around (left from first → last, right from last → first)
+- **Selection**: Starts at index 0 by default
+- **Exit**: Only exits when Enter is pressed (no escape key)
+
+<Warning>
+  The `Display()` method clears the console on every render. Any previous console output will be lost.
+</Warning>
+
+## Private Methods
+
+### Tag()
+
+Displays the PhasmoDecrypt ASCII art banner.
+
+```csharp
+static void Tag()
+```
+
+Output:
+
+```
+ _____   __  __  ______  ____             _____       ____    ____    ______  ______   
+/\  _`\ /\ \/\ \/\  _  \/\  _`\   /'\_/`\/\  __`\    /\  _`\ /\  _`\ /\__  _\/\__  _\  
+\ \ \L\ \ \ \_\ \ \ \L\ \ \,\L\_\/\      \ \ \/\ \   \ \ \L\_\ \ \/\ \/_/\ \/\/_/\ \/  
+ \ \ ,__/\ \  _  \ \  __ \/_\__ \\ \ \__\ \ \ \ \ \   \ \  _\L\ \ \ \ \ \ \ \   \ \ \  
+  \ \ \/  \ \ \ \ \ \ \/\ \/\ \L\ \ \ \_/\ \ \ \_\ \   \ \ \L\ \ \ \_\ \ \_\ \__ \ \ \ 
+   \ \_\   \ \_\ \_\ \_\ \_\ `\____\ \_\\ \_\ \_____\   \ \____/\ \____/ /\_____\ \ \_\
+    \/_/    \/_/\/_/\/_/\/_/\/_____/\/_/ \/_/\/_____/    \/___/  \/___/  \/_____/  \/_/
+```
+
+- Rendered in `ConsoleColor.DarkMagenta`
+- Automatically called before displaying menu options
+
+## Dependencies
+
+- `System` - For Console and Action types
+
+## Source Reference
+
+See the full implementation: `/workspace/source/Components/UI.cs:15-86`

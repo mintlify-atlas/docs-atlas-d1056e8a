@@ -1,0 +1,500 @@
+---
+title: 'Preset Functions'
+description: 'Complete guide to PhasmoDecrypt preset functions for quick save modifications'
+---
+
+## Overview
+
+Presets are pre-configured modifications that you can apply to your decrypted save file without manual JSON editing. They provide quick access to common modifications like unlocking all items, maximizing inventory, and changing money or XP.
+
+## Accessing Presets
+
+<Steps>
+  <Step title="Decrypt your save">
+    Follow the [decryption guide](/guides/decrypting-saves) to decrypt your Phasmophobia save file.
+  </Step>
+  
+  <Step title="Navigate to Presets">
+    After decryption, select **Presets** from the menu using the **Left/Right arrow keys** and press **Enter**.
+  </Step>
+  
+  <Step title="Choose a preset">
+    You'll see the Presets menu with options:
+    - Unlock All tier 3
+    - Max Items
+    - Change Money
+    - Change Xp
+    - Use all
+    - Save and encrypt
+    - Save decrypted
+    - Back
+    
+    Navigate with arrow keys and press **Enter** to apply.
+  </Step>
+</Steps>
+
+<Warning>
+  **Presets modify the decrypted data in memory.** Changes are not saved to disk until you use "Save and encrypt" or "Save decrypted". You can apply multiple presets before saving.
+</Warning>
+
+## Available Presets
+
+### Unlock All Tier 3
+
+Unlocks all Tier 2 and Tier 3 equipment in your inventory.
+
+**What it does:**
+- Finds all properties containing "TierTwoUnlockOwned", "tierTwoUnlockOwned", "tierThreeUnlocked", or "TierThreeUnlockOwned"
+- Sets their values to `true`
+- Displays confirmation for each updated property
+
+**Technical details:**
+
+```csharp
+foreach (var prop in obje.Properties())
+{
+  if (prop.Name.Contains("TierTwoUnlockOwned", StringComparison.OrdinalIgnoreCase) ||
+      prop.Name.Contains("tierTwoUnlockOwned", StringComparison.OrdinalIgnoreCase) ||
+      prop.Name.Contains("tierThreeUnlocked", StringComparison.OrdinalIgnoreCase) ||
+      prop.Name.Contains("TierThreeUnlockOwned", StringComparison.OrdinalIgnoreCase))
+  {
+    if (prop.Value["__type"]?.ToString() == "bool")
+    {
+      prop.Value["value"] = true;
+    }
+  }
+}
+```
+
+Reference: `/workspace/source/Classes/EditJson.cs:12-36`
+
+**Example output:**
+```
+Updated tierTwoUnlockOwned to true
+Updated TierTwoUnlockOwned to true
+Updated tierThreeUnlocked to true
+Updated TierThreeUnlockOwned to true
+> Succes press any key to continue
+```
+
+**Use case:** Quickly unlock all high-tier equipment without grinding levels or spending money on individual upgrades.
+
+---
+
+### Max Items
+
+Sets all inventory item counts to 999.
+
+**What it does:**
+- Finds all properties containing "Inventory" (case-insensitive)
+- Sets their values to `999`
+- Only affects integer-type fields
+- Displays confirmation for each updated property
+
+**Technical details:**
+
+```csharp
+foreach (var prop in obje.Properties())
+{
+  if (prop.Name.Contains("Inventory", StringComparison.OrdinalIgnoreCase))
+  {
+    if (prop.Value["__type"]?.ToString() == "int")
+    {
+      prop.Value["value"] = 999;
+    }
+  }
+}
+```
+
+Reference: `/workspace/source/Classes/EditJson.cs:40-59`
+
+**Example output:**
+```
+Updated FlashlightInventory to 999
+Updated EMFReaderInventory to 999
+Updated UVFlashlightInventory to 999
+Updated CameraInventory to 999
+... (continues for all items)
+> Succes press any key to continue
+```
+
+**Affected items include:**
+- EMF Readers
+- Flashlights
+- UV Flashlights
+- Spirit Boxes
+- Thermometers
+- Video Cameras
+- Salt
+- Smudge Sticks
+- Candles
+- Photo Cameras
+- And all other equipment types
+
+**Use case:** Ensure you never run out of equipment during investigations, useful for testing or when you want to focus on gameplay rather than resource management.
+
+---
+
+### Change Money
+
+Sets your in-game currency to a custom amount.
+
+<Steps>
+  <Step title="Select 'Change Money'">
+    From the Presets menu, navigate to **Change Money** and press **Enter**.
+  </Step>
+  
+  <Step title="Enter desired amount">
+    You'll see the prompt:
+    ```
+    Enter the amount you want to change the money to:
+    ```
+    
+    Type an integer value (e.g., `100000`, `999999`) and press **Enter**.
+  </Step>
+  
+  <Step title="Validation and confirmation">
+    If you enter an invalid value (non-numeric), you'll see:
+    ```
+    Invalid amount. Please enter a valid integer.
+    ```
+    
+    Otherwise:
+    ```
+    Updated PlayersMoney to [your amount]
+    > Succes press any key to continue
+    ```
+  </Step>
+</Steps>
+
+**Technical details:**
+
+```csharp
+public static void EditMoney(string data, int amount)
+{
+  var obje = JObject.Parse(data);
+  
+  foreach (var prop in obje.Properties())
+  {
+    if (prop.Name.Equals("PlayersMoney", StringComparison.OrdinalIgnoreCase))
+    {
+      if (prop.Value["__type"]?.ToString() == "int")
+      {
+        prop.Value["value"] = amount;
+      }
+    }
+  }
+  Globals.DecryptedText = obje.ToString();
+}
+```
+
+Reference: `/workspace/source/Classes/EditJson.cs:62-79`
+
+**Use case:** Set a specific amount of money for testing, challenge runs (limiting yourself), or simply to afford all equipment without grinding.
+
+**Recommended values:**
+- **100,000** - Comfortable amount for most gameplay
+- **999,999** - Near-maximum safe value
+- **50,000** - Moderate amount for balanced gameplay
+
+---
+
+### Change Xp
+
+Sets your experience points to a custom amount.
+
+<Steps>
+  <Step title="Select 'Change Xp'">
+    From the Presets menu, navigate to **Change Xp** and press **Enter**.
+  </Step>
+  
+  <Step title="Enter desired XP amount">
+    You'll see the prompt:
+    ```
+    Enter the amount you want to change the xp to:
+    ```
+    
+    Type an integer value (e.g., `500000`, `999999`) and press **Enter**.
+  </Step>
+  
+  <Step title="Validation and confirmation">
+    Invalid input shows:
+    ```
+    Invalid amount. Please enter a valid integer.
+    ```
+    
+    Valid input shows:
+    ```
+    Updated Experience to [your amount]
+    > Succes press any key to continue
+    ```
+  </Step>
+</Steps>
+
+**Technical details:**
+
+```csharp
+public static void InfinityXp(string data, int amount)
+{
+  var obje = JObject.Parse(data);
+  
+  foreach (var prop in obje.Properties())
+  {
+    if (prop.Name.Equals("Experience", StringComparison.OrdinalIgnoreCase))
+    {
+      if (prop.Value["__type"]?.ToString() == "int")
+      {
+        prop.Value["value"] = amount;
+      }
+    }
+  }
+  Globals.DecryptedText = obje.ToString();
+}
+```
+
+Reference: `/workspace/source/Classes/EditJson.cs:81-99`
+
+**Use case:** Jump to a specific level, test high-level content, or recover lost progress.
+
+**XP reference (approximate):**
+- **Level 1-10:** ~0-5,000 XP
+- **Level 10-20:** ~5,000-20,000 XP
+- **Level 20-50:** ~20,000-100,000 XP
+- **Level 50+:** 100,000+ XP
+
+---
+
+### Use All
+
+Applies all major presets in sequence with custom money and XP values.
+
+**What it does:**
+1. Unlocks all Tier 3 equipment
+2. Maxes out all inventory items to 999
+3. Prompts for custom XP amount
+4. Prompts for custom money amount
+5. Applies all changes to the decrypted save
+
+<Steps>
+  <Step title="Select 'Use all'">
+    From the Presets menu, navigate to **Use all** and press **Enter**.
+  </Step>
+  
+  <Step title="Enter XP amount">
+    First prompt:
+    ```
+    Enter the amount you want to change the xp to:
+    ```
+    
+    Input a valid integer. Invalid input repeats the prompt.
+  </Step>
+  
+  <Step title="Enter money amount">
+    Second prompt:
+    ```
+    Enter the amount you want to change the money to
+    ```
+    
+    Input a valid integer. Invalid input repeats the prompt.
+  </Step>
+  
+  <Step title="All presets applied">
+    The preset automatically applies:
+    - Unlock All tier 3
+    - Max Items
+    - Change Money (to your specified amount)
+    - Change Xp (to your specified amount)
+    
+    You'll see confirmation messages for all changes.
+  </Step>
+</Steps>
+
+**Technical details:**
+
+The "Use all" preset calls multiple preset functions sequentially:
+
+```csharp
+EditJson.UnlockAllTier3(Globals.DecryptedText);
+EditJson.MaxItems(Globals.DecryptedText);
+// [Prompts for XP and money values]
+EditJson.EditMoney(Globals.DecryptedText, mny);
+EditJson.InfinityXp(Globals.DecryptedText, xpp);
+```
+
+Reference: `/workspace/source/Program.cs:236-263`
+
+**Use case:** Complete save overhaul for maximum resources, unlocks, and custom progression values. Ideal for:
+- Starting fresh with everything unlocked
+- Testing gameplay without restrictions
+- Recovering from data loss
+
+---
+
+## Saving Your Changes
+
+After applying presets, you must save your changes:
+
+### Save and Encrypt
+
+Creates an encrypted save file ready for use in Phasmophobia.
+
+<Steps>
+  <Step title="Select 'Save and encrypt'">
+    From the Presets menu, navigate to **Save and encrypt** and press **Enter**.
+  </Step>
+  
+  <Step title="Encrypted file created">
+    Your modified save is encrypted and saved as:
+    ```
+    SaveFile_Encrypted.txt
+    ```
+    
+    You'll see:
+    ```
+    Encrypt Successful saved to SaveFile_Encrypted.txt
+    ```
+  </Step>
+  
+  <Step title="Replace game save">
+    Follow the [encryption guide](/guides/encrypting-saves#using-the-encrypted-save) to copy this file to your Phasmophobia save directory.
+  </Step>
+</Steps>
+
+Reference: `/workspace/source/Program.cs:265-270`
+
+### Save Decrypted
+
+Saves the modified JSON without encryption for further manual editing.
+
+<Steps>
+  <Step title="Select 'Save decrypted'">
+    From the Presets menu, navigate to **Save decrypted** and press **Enter**.
+  </Step>
+  
+  <Step title="JSON file created">
+    Your modified save is saved as:
+    ```
+    SaveFile_Decrypted.json
+    ```
+    
+    You'll see:
+    ```
+    > Data saved to SaveFile_Decrypted.json
+    ```
+  </Step>
+  
+  <Step title="Further editing or encryption">
+    You can now:
+    - [Edit the JSON manually](/guides/editing-saves) for additional changes
+    - Use the Encrypt function to create a game-ready save later
+  </Step>
+</Steps>
+
+Reference: `/workspace/source/Program.cs:272-276`
+
+## Preset Workflow Examples
+
+### Example 1: Quick Max Everything
+
+1. Decrypt your save ("Use My Save File")
+2. Select **Presets**
+3. Select **Use all**
+4. Enter XP: `999999`
+5. Enter Money: `999999`
+6. Select **Save and encrypt**
+7. Replace your game save with `SaveFile_Encrypted.txt`
+
+**Result:** All equipment unlocked and maxed, 999,999 XP and money.
+
+---
+
+### Example 2: Unlock Tiers Only
+
+1. Decrypt your save
+2. Select **Presets**
+3. Select **Unlock All tier 3**
+4. Select **Save and encrypt**
+5. Replace your game save
+
+**Result:** All equipment tiers unlocked, but your money, XP, and inventory counts remain unchanged.
+
+---
+
+### Example 3: Multiple Preset Stacking
+
+1. Decrypt your save
+2. Select **Presets**
+3. Select **Unlock All tier 3** (unlocks tiers)
+4. Press any key to continue
+5. Select **Max Items** (sets inventory to 999)
+6. Press any key to continue
+7. Select **Change Money**, enter `50000`
+8. Press any key to continue
+9. Select **Save decrypted** (save for manual review)
+10. Review `SaveFile_Decrypted.json`
+11. Return to Encrypt menu and encrypt the file
+
+**Result:** Tier 3 unlocked, 999 of each item, 50,000 money, and you've verified the changes before applying to the game.
+
+---
+
+## Best Practices
+
+### Do:
+
+- **Apply multiple presets** - You can use several presets before saving
+- **Save decrypted first** - Review changes in JSON before encrypting
+- **Use realistic values** - Extremely high numbers (billions) may cause issues
+- **Test incrementally** - Apply one preset, test in-game, then apply more
+- **Keep backups** - Always backup your original save before applying presets
+
+### Don't:
+
+- **Forget to save** - Presets only modify memory; you must save/encrypt to persist changes
+- **Use negative values** - Money and XP should be positive integers
+- **Skip validation** - Always check success messages
+- **Rush the process** - Read each confirmation to ensure correct values
+
+## Troubleshooting
+
+### "Invalid amount. Please enter a valid integer."
+
+**Cause:** You entered non-numeric characters, decimals, or symbols.
+
+**Solution:** Enter whole numbers only (e.g., `100000`, not `100,000` or `100000.50`).
+
+---
+
+### Preset doesn't seem to work
+
+**Possible causes:**
+- Forgot to save after applying preset
+- Forgot to encrypt after saving
+- Didn't replace the game's save file
+
+**Solution:** Ensure you complete all steps: Apply preset → Save/Encrypt → Replace game save.
+
+---
+
+### Changes appear but then revert
+
+**Cause:** The game was running when you replaced the save, or cloud sync restored an old version.
+
+**Solution:**
+1. Fully close Phasmophobia before replacing the save
+2. Disable Steam Cloud sync for Phasmophobia if enabled
+3. Reapply the preset and replace the save again
+
+---
+
+### Some items show 999, others don't
+
+**Cause:** Only properties containing "Inventory" in their name are affected.
+
+**Solution:** This is expected behavior. If certain items aren't modified, they may use different property names. Use [manual editing](/guides/editing-saves) for specific adjustments.
+
+## Next Steps
+
+- **[Encrypting saves](/guides/encrypting-saves)** - Learn how to encrypt your modified save for use in-game
+- **[Editing saves](/guides/editing-saves)** - Make precise manual edits beyond what presets offer
+- **[Decrypting saves](/guides/decrypting-saves)** - Understand the decryption process

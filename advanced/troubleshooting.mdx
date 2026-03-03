@@ -1,0 +1,323 @@
+---
+title: Troubleshooting
+description: Common issues and solutions for PhasmoDecrypt
+---
+
+## Common Issues
+
+This page covers common problems you might encounter while using PhasmoDecrypt and their solutions.
+
+## File Not Found Errors
+
+<AccordionGroup>
+  <Accordion title="No saveFile.txt found at the specified location">
+    **Error Message**: `No saveFile.txt found at the specified location. Please select the other option.`
+
+    **Cause**: PhasmoDecrypt cannot locate the save file at the expected path.
+
+    **Default Save Location**:
+    ```
+    %USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia\SaveFile.txt
+    ```
+
+    **Solutions**:
+    
+    1. **Verify the file exists**:
+       - Open File Explorer
+       - Paste `%USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia` into the address bar
+       - Check if `SaveFile.txt` exists
+
+    2. **Use manual file selection**:
+       - Select "I'll add it myself" from the menu
+       - Navigate to your save file location
+       - Copy the full path and paste it when prompted
+
+    3. **Check if Phasmophobia has been launched**:
+       - The save file is created after you start the game for the first time
+       - Launch Phasmophobia at least once to generate the save file
+
+    <Note>
+    The save file path is constructed at `Program.cs:88-89`
+    </Note>
+  </Accordion>
+
+  <Accordion title="No SaveFile_Decrypted.json found">
+    **Error Message**: `No SaveFile_Decrypted.json found at the specified location. Please select the other option.`
+
+    **Cause**: You're trying to encrypt a decrypted file, but it doesn't exist in the current directory.
+
+    **Solutions**:
+
+    1. **Decrypt a save file first**:
+       - Go to the Decrypt menu
+       - Decrypt a save file
+       - Save it as `SaveFile_Decrypted.json`
+
+    2. **Check the working directory**:
+       - The file should be in the same folder as PhasmoDecrypt.exe
+       - Look for `SaveFile_Decrypted.json` in that location
+
+    3. **Use manual file selection**:
+       - Choose "I'll add it myself"
+       - Provide the full path to your decrypted JSON file
+
+    <Note>
+    This check occurs at `Program.cs:306-309`
+    </Note>
+  </Accordion>
+
+  <Accordion title="Invalid file path. Please try again.">
+    **Error Message**: `Invalid file path. Please try again.`
+
+    **Cause**: The file path you entered is empty or contains only whitespace.
+
+    **Solutions**:
+
+    1. **Ensure you enter a path**:
+       - Don't just press Enter without typing anything
+       - Provide a complete file path
+
+    2. **Copy-paste the path**:
+       - Right-click the file in File Explorer
+       - Select "Copy as path"
+       - Paste it into PhasmoDecrypt (quotes will be automatically trimmed)
+
+    3. **Use forward or backslashes**:
+       - Both `C:\\Path\\To\\File.txt` and `C:/Path/To/File.txt` work
+       - Avoid mixing slash types
+
+    <Note>
+    Path validation occurs at `Program.cs:109-114` and `Program.cs:326-331`
+    </Note>
+  </Accordion>
+</AccordionGroup>
+
+## Decryption Errors
+
+<AccordionGroup>
+  <Accordion title="Error: Data is null or empty">
+    **Error Message**: `Error: Data is null or empty.`
+
+    **Cause**: The file you're trying to decrypt is empty or couldn't be read.
+
+    **Solutions**:
+
+    1. **Check file size**:
+       - Right-click the file and select Properties
+       - Verify the size is greater than 0 bytes
+       - Phasmophobia save files are typically several KB in size
+
+    2. **Verify file permissions**:
+       - Ensure you have read access to the file
+       - Try copying the file to your Desktop and decrypt from there
+
+    3. **Re-save from the game**:
+       - Launch Phasmophobia
+       - Make any small change (pick up an item, etc.)
+       - Exit the game to trigger a save
+       - Try decrypting again
+
+    <Note>
+    This validation occurs at `Classes/Crypter.cs:16-19`
+    </Note>
+  </Accordion>
+
+  <Accordion title="check the correctness of the file">
+    **Error Message**: `check the correctness of the file: [Exception details]`
+
+    **Cause**: The file was decrypted successfully, but the resulting data isn't valid JSON.
+
+    **Common Causes**:
+
+    1. **Corrupted save file**:
+       - The save file may be damaged
+       - Try using a backup save file if available
+
+    2. **Wrong file type**:
+       - You're trying to decrypt a file that isn't a Phasmophobia save file
+       - Ensure you're using `SaveFile.txt` from the correct location
+
+    3. **File was manually edited while encrypted**:
+       - Encrypted files cannot be edited directly
+       - Only edit decrypted JSON files
+
+    4. **Incomplete file transfer**:
+       - If you copied the save file from another computer, it may not have copied completely
+       - Try copying the file again
+
+    **Solutions**:
+
+    - Use the original save file from the game directory
+    - Restore from a backup if available
+    - Start a new game in Phasmophobia to generate a fresh save file
+
+    <Warning>
+    This error is caught at `Classes/Crypter.cs:48-51` after JSON deserialization fails
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+## Encryption Errors
+
+<AccordionGroup>
+  <Accordion title="No data to save. Please decrypt the file first.">
+    **Error Message**: `No data to save. Please decrypt the file first.`
+
+    **Cause**: You're trying to save decrypted data, but no decryption has been performed in this session.
+
+    **Solutions**:
+
+    1. **Decrypt a file first**:
+       - Return to the main menu
+       - Select "Decrypt"
+       - Complete the decryption process
+       - Then save the decrypted data
+
+    2. **Don't restart between operations**:
+       - PhasmoDecrypt stores decrypted data in memory
+       - Closing and reopening the program clears this data
+       - Complete decrypt → edit → save in one session
+
+    <Note>
+    This check occurs at `Program.cs:152-159` when accessing the Presets menu
+    </Note>
+  </Accordion>
+</AccordionGroup>
+
+## JSON Editing Errors
+
+<AccordionGroup>
+  <Accordion title="Invalid amount. Please enter a valid integer.">
+    **Error Message**: `Invalid amount. Please enter a valid integer.`
+
+    **Cause**: When modifying money or XP, you entered a non-numeric value.
+
+    **Solutions**:
+
+    1. **Use only numbers**:
+       - Enter values like `10000`, not `10,000` or `10k`
+       - Don't include currency symbols or letters
+
+    2. **Stay within integer range**:
+       - Maximum value: `2,147,483,647`
+       - Minimum value: `-2,147,483,648`
+       - Going above/below these values will cause errors
+
+    3. **Don't use decimals**:
+       - Enter `1000`, not `1000.5`
+       - The game only accepts whole numbers
+
+    **Examples**:
+    - ✅ Valid: `100000`
+    - ✅ Valid: `999999`
+    - ❌ Invalid: `100,000` (contains comma)
+    - ❌ Invalid: `1000.50` (contains decimal)
+    - ❌ Invalid: `$1000` (contains symbol)
+
+    <Note>
+    Input validation occurs at `Program.cs:207-213` and `Program.cs:222-228`
+    </Note>
+  </Accordion>
+
+  <Accordion title="Values not updating in game">
+    **Cause**: You edited the decrypted JSON but didn't re-encrypt and replace the save file.
+
+    **Solutions**:
+
+    1. **Complete the full workflow**:
+       <Steps>
+         <Step title="Decrypt">
+           Decrypt the original `SaveFile.txt`
+         </Step>
+         <Step title="Edit">
+           Use Presets to modify money, XP, or items
+         </Step>
+         <Step title="Encrypt">
+           Save and encrypt the modified data
+         </Step>
+         <Step title="Replace">
+           Copy `SaveFile_Encrypted.txt` over the original save file
+         </Step>
+       </Steps>
+
+    2. **Backup first**:
+       - Always backup the original `SaveFile.txt` before replacing it
+       - Keep a copy in a safe location
+
+    3. **Close Phasmophobia**:
+       - The game must be closed when you replace the save file
+       - If the game is running, it may overwrite your changes
+
+    <Warning>
+    Always backup your original save file before making changes. If something goes wrong, you can restore from the backup.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+## Permission Errors
+
+<AccordionGroup>
+  <Accordion title="Access denied or permission errors">
+    **Cause**: Windows is preventing PhasmoDecrypt from reading or writing files.
+
+    **Solutions**:
+
+    1. **Run as Administrator**:
+       - Right-click `PhasmoDecrypt.exe`
+       - Select "Run as administrator"
+       - This gives the program elevated permissions
+
+    2. **Check folder permissions**:
+       - Right-click the folder containing save files
+       - Select Properties → Security
+       - Ensure your user account has Read and Write permissions
+
+    3. **Disable read-only attribute**:
+       - Right-click the save file
+       - Select Properties
+       - Uncheck "Read-only" if it's enabled
+       - Click Apply
+
+    4. **Move files to a different location**:
+       - Copy save files to your Desktop or Documents folder
+       - These locations typically have fewer restrictions
+       - Decrypt/encrypt from there
+
+    5. **Check antivirus software**:
+       - Some antivirus programs block file modifications
+       - Add PhasmoDecrypt to your antivirus exceptions
+       - Temporarily disable antivirus to test (not recommended long-term)
+  </Accordion>
+</AccordionGroup>
+
+## Output Files
+
+### Default Output Locations
+
+PhasmoDecrypt creates files in the same directory as the executable:
+
+| File | Description |
+|------|-------------|
+| `SaveFile_Decrypted.json` | Decrypted save data in human-readable JSON format |
+| `SaveFile_Encrypted.txt` | Re-encrypted save file ready to use in Phasmophobia |
+
+<Note>
+Output files are created in the application's base directory (`AppDomain.CurrentDomain.BaseDirectory`)
+</Note>
+
+## Getting Help
+
+If you encounter an issue not covered here:
+
+1. **Check the error message carefully** - It often indicates exactly what went wrong
+2. **Verify file paths** - Most issues are caused by incorrect file locations
+3. **Test with a fresh save** - Try decrypting a newly created save file from the game
+4. **Report the issue** - Create an issue on the GitHub repository with:
+   - The exact error message
+   - Steps to reproduce the problem
+   - Your Windows version
+   - Whether you're using the default or custom save location
+
+<Warning>
+Never share your actual save files publicly as they may contain personal information. Only share error messages and steps to reproduce.
+</Warning>

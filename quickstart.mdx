@@ -1,80 +1,499 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick Start
+description: Decrypt, modify, and encrypt your Phasmophobia save file in minutes
 ---
 
-## Get started in three steps
+# Quick Start Guide
 
-Get your documentation site running locally and make your first customization.
-
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+This guide will walk you through your first decrypt and encrypt operation with PhasmoDecrypt. In just a few minutes, you'll learn how to view your save file and optionally modify it.
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+Before starting, make sure you've [installed PhasmoDecrypt](/installation) and have the .NET 9.0 runtime on your system.
 </Note>
+
+## Tutorial: Decrypt Your First Save File
+
+Let's decrypt your Phasmophobia save file and view it in JSON format.
+
+<Steps>
+  <Step title="Launch PhasmoDecrypt">
+    Double-click **PhasmoDecrypt.exe** to open the application.
+    
+    You'll see the main menu with three options:
+    ```
+            Decrypt    Encrypt    Exit
+    ```
+    
+    Use the **Left/Right arrow keys** to navigate and **Enter** to select.
+  </Step>
+  
+  <Step title="Select Decrypt">
+    Navigate to **Decrypt** (it should be highlighted by default) and press **Enter**.
+    
+    You'll see two options:
+    ```
+            Use My Save File    I'll add it myself    Back
+    ```
+  </Step>
+  
+  <Step title="Choose save file location">
+    **Option 1: Automatic Detection (Recommended)**
+    
+    Select **Use My Save File** to automatically find your save at:
+    ```
+    %USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia\SaveFile.txt
+    ```
+    
+    **Option 2: Manual Path**
+    
+    Select **I'll add it myself** and enter the full path to your save file:
+    ```
+    File Path > C:\Users\YourName\AppData\LocalLow\Kinetic Games\Phasmophobia\SaveFile.txt
+    ```
+    
+    <Warning>
+    If you get "No saveFile.txt found", verify that:
+    - You've played Phasmophobia at least once
+    - The game has created a save file
+    - The path is correct
+    </Warning>
+  </Step>
+  
+  <Step title="Save or modify the decrypted data">
+    After successful decryption, you'll see:
+    ```
+            Save Decrypted File    Presets    Back
+    ```
+    
+    **To just view the data:**
+    
+    Select **Save Decrypted File**. This will create:
+    ```
+    SaveFile_Decrypted.json
+    ```
+    in the same folder as PhasmoDecrypt.exe.
+    
+    You'll see the confirmation:
+    ```
+    > Data saved to SaveFile_Decrypted.json
+    ```
+    
+    Press any key to return to the main menu.
+  </Step>
+</Steps>
+
+## Understanding the Decrypted Output
+
+Open `SaveFile_Decrypted.json` in any text editor. You'll see your Phasmophobia data in JSON format:
+
+```json
+{
+  "PlayersMoney": {
+    "__type": "int",
+    "value": 5000
+  },
+  "Experience": {
+    "__type": "int",
+    "value": 12500
+  },
+  "FlashlightInventory": {
+    "__type": "int",
+    "value": 3
+  },
+  "EMFReaderInventory": {
+    "__type": "int",
+    "value": 2
+  },
+  "TierThreeUnlockOwned": {
+    "__type": "bool",
+    "value": false
+  }
+  // ... more fields
+}
+```
+
+<Note>
+Each field has a `__type` (data type) and `value` (actual value). This structure is how Phasmophobia stores save data internally.
+</Note>
+
+## Tutorial: Modify Your Save File with Presets
+
+PhasmoDecrypt includes powerful presets to modify your game progress.
+
+<Steps>
+  <Step title="Decrypt your save file">
+    Follow the steps above to decrypt your save file, but **don't** select "Save Decrypted File" yet.
+  </Step>
+  
+  <Step title="Select Presets">
+    From the after-decrypt menu, select **Presets**.
+    
+    You'll see the presets menu:
+    ```
+    Unlock All tier 3    Max Items    Change Money    Change Xp
+    Use all    Save and encrypt    Save decrypted    Back
+    ```
+  </Step>
+  
+  <Step title="Choose a preset">
+    **Unlock All Tier 3**
+    
+    Unlocks all tier 2 and tier 3 equipment. Select this option and you'll see:
+    ```
+    Updated tierTwoUnlockOwned to true
+    Updated tierThreeUnlockOwned to true
+    Updated TierThreeUnlockOwned to true
+    > Success press any key to continue
+    ```
+    
+    **Max Items**
+    
+    Sets all inventory items to 999:
+    ```
+    Updated FlashlightInventory to 999
+    Updated EMFReaderInventory to 999
+    Updated SpiritBoxInventory to 999
+    // ... more items
+    > Success press any key to continue
+    ```
+    
+    **Change Money**
+    
+    Sets custom money amount:
+    ```
+    Enter the amount you want to change the money to:
+    > 999999
+    Updated PlayersMoney to 999999
+    > Success press any key to continue
+    ```
+    
+    **Change Xp**
+    
+    Sets custom XP amount:
+    ```
+    Enter the amount you want to change the xp to:
+    > 999999
+    Updated Experience to 999999
+    > Success press any key to continue
+    ```
+    
+    **Use all**
+    
+    Applies multiple presets at once:
+    1. Unlocks all tier 3 items
+    2. Maxes all inventory items
+    3. Prompts for custom XP amount
+    4. Prompts for custom money amount
+  </Step>
+  
+  <Step title="Save and encrypt">
+    After applying your desired presets, select **Save and encrypt**.
+    
+    This will create:
+    ```
+    SaveFile_Encrypted.txt
+    ```
+    
+    You'll see:
+    ```
+    Encrypt Successful saved to SaveFile_Encrypted.txt
+    ```
+    
+    <Warning>
+    **Important:** This file is now ready to use in Phasmophobia, but you must replace the original save file.
+    </Warning>
+  </Step>
+</Steps>
+
+## Tutorial: Replace Your Save File
+
+To use your modified save in Phasmophobia:
+
+<Steps>
+  <Step title="Close Phasmophobia">
+    Make sure Phasmophobia is **completely closed** before replacing the save file.
+  </Step>
+  
+  <Step title="Backup the original save">
+    Navigate to:
+    ```
+    %USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia
+    ```
+    
+    Copy `SaveFile.txt` to a backup location, such as:
+    ```
+    SaveFile_Backup_2026-03-03.txt
+    ```
+    
+    <Warning>
+    **Always backup your original save file!** This allows you to restore it if something goes wrong.
+    </Warning>
+  </Step>
+  
+  <Step title="Replace the save file">
+    Copy your `SaveFile_Encrypted.txt` from the PhasmoDecrypt folder.
+    
+    Navigate to:
+    ```
+    %USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia
+    ```
+    
+    **Rename** `SaveFile_Encrypted.txt` to `SaveFile.txt` and paste it here, replacing the original.
+  </Step>
+  
+  <Step title="Launch Phasmophobia">
+    Start Phasmophobia and verify your changes:
+    - Check your money/XP in the main menu
+    - Verify unlocked items in the equipment store
+    - Check inventory counts
+    
+    <Note>
+    Your modifications should now be visible in the game!
+    </Note>
+  </Step>
+</Steps>
+
+## Tutorial: Encrypt a Custom JSON File
+
+If you've manually edited the JSON file, you can encrypt it:
+
+<Steps>
+  <Step title="Edit SaveFile_Decrypted.json">
+    Open `SaveFile_Decrypted.json` in a text editor and make your changes.
+    
+    For example, change money:
+    ```json
+    "PlayersMoney": {
+      "__type": "int",
+      "value": 999999
+    }
+    ```
+    
+    Save the file.
+    
+    <Warning>
+    Be careful not to break the JSON syntax. Invalid JSON will cause encryption to fail.
+    </Warning>
+  </Step>
+  
+  <Step title="Select Encrypt from main menu">
+    In PhasmoDecrypt, navigate to **Encrypt** and press Enter.
+    
+    You'll see:
+    ```
+            Use My Decrypted File    I'll add it myself    Back
+    ```
+  </Step>
+  
+  <Step title="Choose your decrypted file">
+    **Option 1: Use My Decrypted File**
+    
+    Automatically uses `SaveFile_Decrypted.json` from the PhasmoDecrypt folder.
+    
+    **Option 2: I'll add it myself**
+    
+    Enter the full path to your custom JSON file:
+    ```
+    File Path > C:\Path\To\YourCustomFile.json
+    ```
+  </Step>
+  
+  <Step title="Encryption complete">
+    You'll see:
+    ```
+    Encrypt Successful saved to SaveFile_Encrypted.txt
+    ```
+    
+    Your encrypted file is now ready to use in Phasmophobia.
+  </Step>
+</Steps>
+
+## Common Workflows
+
+<AccordionGroup>
+  <Accordion title="Quick View Save Data">
+    1. Launch PhasmoDecrypt
+    2. Select **Decrypt** → **Use My Save File**
+    3. Select **Save Decrypted File**
+    4. Open `SaveFile_Decrypted.json` in a text editor
+  </Accordion>
+  
+  <Accordion title="Unlock Everything">
+    1. Decrypt your save file
+    2. Select **Presets** → **Use all**
+    3. Enter desired XP (e.g., 999999)
+    4. Enter desired money (e.g., 999999)
+    5. Select **Save and encrypt**
+    6. Replace your Phasmophobia save file
+  </Accordion>
+  
+  <Accordion title="Custom JSON Editing">
+    1. Decrypt your save file
+    2. Select **Save Decrypted File**
+    3. Edit `SaveFile_Decrypted.json` manually
+    4. Return to main menu
+    5. Select **Encrypt** → **Use My Decrypted File**
+    6. Replace your Phasmophobia save file
+  </Accordion>
+  
+  <Accordion title="Restore Original Save">
+    1. Navigate to `%USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia`
+    2. Delete the current `SaveFile.txt`
+    3. Rename your backup (e.g., `SaveFile_Backup_2026-03-03.txt`) to `SaveFile.txt`
+    4. Launch Phasmophobia
+  </Accordion>
+</AccordionGroup>
+
+## Understanding the Code
+
+For developers interested in how PhasmoDecrypt works:
+
+<CodeGroup>
+```csharp Program.cs - Main Menu
+// Main menu loop with arrow key navigation
+string[] options = new string[] { "Decrypt", "Encrypt", "Exit" };
+int SelectedIndex = 0;
+
+while (true) {
+  Console.Clear();
+  Tag(); // Display ASCII art banner
+  
+  // Display menu options
+  for (int i = 0; i < options.Length; i++) {
+    if (i == SelectedIndex) {
+      Console.BackgroundColor = ConsoleColor.DarkMagenta;
+      Console.ForegroundColor = ConsoleColor.White;
+    }
+    Console.Write($"\t\t\t{options[i]}\t");
+    Console.ResetColor();
+  }
+  
+  // Handle arrow key input
+  ConsoleKey key = Console.ReadKey(true).Key;
+  if (key == ConsoleKey.LeftArrow) {
+    SelectedIndex = (SelectedIndex == 0) ? options.Length - 1 : SelectedIndex - 1;
+  }
+  else if (key == ConsoleKey.RightArrow) {
+    SelectedIndex = (SelectedIndex == options.Length - 1) ? 0 : SelectedIndex + 1;
+  }
+  else if (key == ConsoleKey.Enter) {
+    // Execute selected action
+  }
+}
+```
+
+```csharp Crypter.cs - Decryption
+public string Decrypt(byte[] data) {
+  // Extract 16-byte IV from start of file
+  var iv = new byte[16];
+  Array.Copy(data, iv, 16);
+  
+  // Derive AES key using PBKDF2
+  using var dbytes = new Rfc2898DeriveBytes(
+    Globals.Save_Secret,  // "t36gref9u84y7f43g"
+    iv,
+    100,                  // Iterations
+    HashAlgorithmName.SHA1
+  );
+  var key = dbytes.GetBytes(16);
+  
+  // Decrypt using AES-CBC
+  using var aes = Aes.Create();
+  aes.Mode = CipherMode.CBC;
+  aes.Padding = PaddingMode.PKCS7;
+  aes.Key = key;
+  aes.IV = iv;
+  
+  using var decryptor = aes.CreateDecryptor();
+  using var ms = new MemoryStream(data, 16, data.Length - 16);
+  using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+  using var reader = new StreamReader(cs, Encoding.UTF8);
+  
+  var decrypted = reader.ReadToEnd();
+  
+  // Format as indented JSON
+  var obj = JsonConvert.DeserializeObject(decrypted);
+  return JsonConvert.SerializeObject(obj, Formatting.Indented);
+}
+```
+
+```csharp EditJson.cs - Unlock Tier 3
+public static void UnlockAllTier3(string data) {
+  var obj = JObject.Parse(data);
+  
+  foreach (var prop in obj.Properties()) {
+    // Find tier unlock properties
+    if (prop.Name.Contains("TierTwoUnlockOwned", StringComparison.OrdinalIgnoreCase) ||
+        prop.Name.Contains("TierThreeUnlockOwned", StringComparison.OrdinalIgnoreCase)) {
+      
+      // Set to true if boolean type
+      if (prop.Value["__type"]?.ToString() == "bool") {
+        prop.Value["value"] = true;
+        Console.WriteLine($"Updated {prop.Name} to true");
+      }
+    }
+  }
+  
+  // Update global decrypted text
+  Globals.DecryptedText = obj.ToString();
+}
+```
+</CodeGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Error: No saveFile.txt found">
+    This means PhasmoDecrypt couldn't find your save file. Verify:
+    
+    1. You've played Phasmophobia at least once
+    2. The save file exists at: `%USERPROFILE%\AppData\LocalLow\Kinetic Games\Phasmophobia\SaveFile.txt`
+    3. Try using "I'll add it myself" and entering the full path manually
+  </Accordion>
+  
+  <Accordion title="Error: check the correctness of the file">
+    The file you're trying to decrypt is not a valid Phasmophobia save file. Make sure:
+    
+    1. You're decrypting `SaveFile.txt`, not `SaveFile_Decrypted.json`
+    2. The file hasn't been corrupted
+    3. The file is from a recent version of Phasmophobia
+  </Accordion>
+  
+  <Accordion title="Modified save not working in game">
+    If your modifications don't appear in Phasmophobia:
+    
+    1. Verify Phasmophobia was closed when you replaced the save
+    2. Check that you renamed `SaveFile_Encrypted.txt` to `SaveFile.txt`
+    3. Ensure you placed it in the correct folder
+    4. Try decrypting the new save file to verify it was encrypted correctly
+  </Accordion>
+  
+  <Accordion title="Invalid JSON syntax error when encrypting">
+    You've likely made a syntax error when manually editing the JSON. Common issues:
+    
+    - Missing comma between properties
+    - Missing quotation marks
+    - Incorrect data type (e.g., string instead of int)
+    
+    Use a JSON validator like [jsonlint.com](https://jsonlint.com) to check your JSON.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+Now that you've mastered the basics:
+
+<CardGroup cols={2}>
+  <Card title="Explore the Code" icon="code" href="https://github.com/Oztturk/PhasmoDecrypt">
+    Dive into the source code to understand the encryption algorithm
+  </Card>
+  <Card title="Learn More" icon="book" href="/introduction">
+    Read about how PhasmoDecrypt implements AES encryption
+  </Card>
+  <Card title="Contribute" icon="code-pull-request" href="https://github.com/Oztturk/PhasmoDecrypt/pulls">
+    Submit improvements or new presets to the project
+  </Card>
+  <Card title="Report Issues" icon="bug" href="https://github.com/Oztturk/PhasmoDecrypt/issues">
+    Found a bug? Let us know on GitHub
+  </Card>
+</CardGroup>

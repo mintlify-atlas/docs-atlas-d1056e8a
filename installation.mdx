@@ -1,0 +1,260 @@
+---
+title: Installation
+description: Download and install PhasmoDecrypt on your Windows system
+---
+
+# Installation
+
+Get PhasmoDecrypt up and running on your Windows machine in just a few steps.
+
+## System Requirements
+
+Before installing PhasmoDecrypt, ensure your system meets these requirements:
+
+<CardGroup cols={2}>
+  <Card title="Operating System" icon="windows">
+    Windows 10 or Windows 11 (64-bit)
+  </Card>
+  <Card title=".NET Runtime" icon="code">
+    .NET 9.0 Runtime or SDK
+  </Card>
+  <Card title="Memory" icon="memory">
+    Minimum 100 MB free RAM
+  </Card>
+  <Card title="Storage" icon="hard-drive">
+    Minimum 50 MB free disk space
+  </Card>
+</CardGroup>
+
+<Note>
+PhasmoDecrypt is a Windows-only application. It requires the .NET 9.0 runtime to be installed on your system.
+</Note>
+
+## Step 1: Install .NET Runtime
+
+PhasmoDecrypt is built with .NET 9.0. If you don't already have it installed:
+
+<Steps>
+  <Step title="Download .NET 9.0">
+    Visit the [.NET download page](https://dotnet.microsoft.com/download/dotnet/9.0) and download the **.NET Desktop Runtime 9.0** installer for Windows.
+  </Step>
+  
+  <Step title="Run the installer">
+    Double-click the downloaded installer and follow the on-screen instructions.
+  </Step>
+  
+  <Step title="Verify installation">
+    Open Command Prompt or PowerShell and run:
+    
+    ```bash
+    dotnet --version
+    ```
+    
+    You should see version 9.0.x or higher:
+    
+    ```
+    9.0.0
+    ```
+  </Step>
+</Steps>
+
+## Step 2: Download PhasmoDecrypt
+
+<Steps>
+  <Step title="Visit the releases page">
+    Go to the [PhasmoDecrypt releases page](https://github.com/Oztturk/PhasmoDecrypt/releases) on GitHub.
+  </Step>
+  
+  <Step title="Download the latest release">
+    Under the latest release, download the **PhasmoDecrypt.zip** file.
+    
+    <Note>
+    Look for the release tagged as "Latest" with a green badge.
+    </Note>
+  </Step>
+  
+  <Step title="Extract the ZIP file">
+    Right-click the downloaded ZIP file and select **Extract All...**
+    
+    Choose a destination folder, such as:
+    ```
+    C:\Tools\PhasmoDecrypt
+    ```
+    
+    <Warning>
+    Avoid extracting to folders that require administrator permissions, such as `C:\Program Files`.
+    </Warning>
+  </Step>
+</Steps>
+
+## Step 3: Verify Installation
+
+After extraction, your PhasmoDecrypt folder should contain:
+
+```
+PhasmoDecrypt/
+├── PhasmoDecrypt.exe          # Main executable
+├── PhasmoDecrypt.dll          # Application library
+├── Newtonsoft.Json.dll        # JSON library dependency
+├── PhasmoDecrypt.runtimeconfig.json
+└── PhasmoDecrypt.deps.json
+```
+
+<Steps>
+  <Step title="Navigate to the folder">
+    Open File Explorer and navigate to where you extracted PhasmoDecrypt.
+  </Step>
+  
+  <Step title="Run PhasmoDecrypt">
+    Double-click **PhasmoDecrypt.exe** to launch the application.
+    
+    You should see the PhasmoDecrypt ASCII art logo and main menu:
+    
+    ```
+             _____   __  __  ______  ____             _____       ____    ____    ______  ______   
+            /\  _`\ /\ \/\ \/\  _  \/\  _`\   /'\_/`\/\  __`\    /\  _`\ /\  _`\ /\__  _\/\__  _\  
+            \ \ \L\ \ \ \_\ \ \ \L\ \ \,\L\_\/\      \ \ \/\ \   \ \ \L\_\ \ \/\ \/_/\ \/\/_/\ \/  
+             \ \ ,__/\ \  _  \ \  __ \/_\__ \\ \ \__\ \ \ \ \ \   \ \  _\L\ \ \ \ \ \ \ \   \ \ \  
+              \ \ \/  \ \ \ \ \ \ \/\ \/\ \L\ \ \ \_/\ \ \ \_\ \   \ \ \L\ \ \ \_\ \ \_\ \__ \ \ \ 
+               \ \_\   \ \_\ \_\ \_\ \_\ `\____\ \_\\ \_\ \_____\   \ \____/\ \____/ /\_____\ \ \_\
+                \/_/    \/_/\/_/\/_/\/_/\/_____/\/_/ \/_/\/______/    \/___/  \/___/  \/_____/  \/_/
+    
+            Decrypt    Encrypt    Exit
+    ```
+  </Step>
+  
+  <Step title="Test navigation">
+    Use the **Left** and **Right** arrow keys to navigate between menu options.
+    
+    Press **Enter** to select an option.
+    
+    <Note>
+    If the application launches successfully, you're ready to use PhasmoDecrypt!
+    </Note>
+  </Step>
+</Steps>
+
+## Alternative: Build from Source
+
+If you prefer to build PhasmoDecrypt from source:
+
+<Steps>
+  <Step title="Install .NET SDK">
+    Download and install the [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) (not just the runtime).
+  </Step>
+  
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/Oztturk/PhasmoDecrypt.git
+    cd PhasmoDecrypt
+    ```
+  </Step>
+  
+  <Step title="Restore dependencies">
+    ```bash
+    dotnet restore
+    ```
+    
+    This will download **Newtonsoft.Json** (version 13.0.3).
+  </Step>
+  
+  <Step title="Build the project">
+    ```bash
+    dotnet build --configuration Release
+    ```
+    
+    The compiled executable will be in:
+    ```
+    bin/Release/net9.0/PhasmoDecrypt.exe
+    ```
+  </Step>
+  
+  <Step title="Run the application">
+    ```bash
+    dotnet run
+    ```
+    
+    Or navigate to the build output and run `PhasmoDecrypt.exe` directly.
+  </Step>
+</Steps>
+
+## Project Structure
+
+For developers interested in the codebase structure:
+
+```
+PhasmoDecrypt/
+├── Classes/
+│   ├── Crypter.cs           # AES encryption/decryption logic
+│   ├── EditJson.cs          # JSON modification presets
+│   └── Globals.cs           # Constants (version, secret key)
+├── Components/
+│   └── UI.cs                # Console menu navigation
+├── Program.cs               # Main entry point and menu logic
+├── PhasmoDecrypt.csproj     # Project configuration
+└── PhasmoDecrypt.sln        # Solution file
+```
+
+### Key Components
+
+<Accordion title="Crypter.cs - Encryption Engine">
+  Located at `Classes/Crypter.cs`, this class implements:
+  
+  - `Decrypt(byte[] data)` - Decrypts save file bytes to JSON string
+  - `EncryptData(string data)` - Encrypts JSON string to save file bytes
+  
+  Uses AES-256 in CBC mode with PBKDF2 key derivation (100 iterations, SHA1).
+</Accordion>
+
+<Accordion title="EditJson.cs - Save Modification">
+  Located at `Classes/EditJson.cs`, provides static methods:
+  
+  - `UnlockAllTier3()` - Unlocks all tier 2 and tier 3 items
+  - `MaxItems()` - Sets all inventory items to 999
+  - `EditMoney(int amount)` - Changes player money
+  - `InfinityXp(int amount)` - Changes player XP
+</Accordion>
+
+<Accordion title="UI.cs - Interactive Menu">
+  Located at `Components/UI.cs`, implements a reusable menu system with arrow key navigation and the PhasmoDecrypt ASCII banner.
+</Accordion>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Error: The application requires .NET Runtime 9.0">
+    Install the .NET 9.0 Desktop Runtime from the [official download page](https://dotnet.microsoft.com/download/dotnet/9.0).
+  </Accordion>
+  
+  <Accordion title="Error: Access denied when running PhasmoDecrypt.exe">
+    Move the PhasmoDecrypt folder to a location that doesn't require administrator permissions, such as your Documents folder or a custom folder in `C:\Tools`.
+  </Accordion>
+  
+  <Accordion title="The console window closes immediately">
+    PhasmoDecrypt should remain open. If it closes immediately, try running it from Command Prompt:
+    
+    ```bash
+    cd C:\Path\To\PhasmoDecrypt
+    .\PhasmoDecrypt.exe
+    ```
+    
+    This will show any error messages.
+  </Accordion>
+  
+  <Accordion title="Missing Newtonsoft.Json.dll error">
+    The Newtonsoft.Json library should be included in the release ZIP. If missing, download it manually or build from source using `dotnet restore`.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+Now that PhasmoDecrypt is installed, you're ready to:
+
+<CardGroup cols={2}>
+  <Card title="Quick Start Tutorial" icon="rocket" href="/quickstart">
+    Follow a step-by-step guide to decrypt your first save file
+  </Card>
+  <Card title="Learn the Basics" icon="book" href="/introduction">
+    Understand how PhasmoDecrypt works under the hood
+  </Card>
+</CardGroup>
